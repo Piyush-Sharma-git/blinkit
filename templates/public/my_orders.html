@@ -1,0 +1,30 @@
+{% extends "public/base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}My orders{% endblock %}
+
+{% block content %}
+<h1 style="margin-top:24px">My orders</h1>
+<p class="hint">Signed in as {{ g.customer.full_name }} ({{ g.customer.email }})</p>
+{% if orders %}
+<div class="panel table-wrap">
+  <table>
+    <thead><tr><th>Order</th><th>Date</th><th class="num">Items</th><th class="num">Total</th><th>Status</th><th>Payment</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td><a href="{{ url_for('public.my_order_detail', order_id=o.order_id) }}">{{ o.order_id|order_code }}</a></td>
+        <td>{{ o.order_date[:16] }}</td>
+        <td class="num">{{ o.item_count }}</td>
+        <td class="num">{{ o.total_amount|inr }}</td>
+        <td>{{ badge(o.status) }}</td>
+        <td>{{ badge(o.payment_status) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="empty panel"><div class="icon">📦</div><p>You have not placed any orders yet.</p>
+    <a class="btn" href="{{ url_for('public.products') }}">Start shopping</a></div>
+{% endif %}
+{% endblock %}

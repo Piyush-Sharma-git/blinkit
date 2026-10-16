@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>Customers</h1><p class="sub">{{ customers|length }} customers{% if q %} matching “{{ q }}”{% endif %}</p></div>
+  <div class="actions"><a class="btn" href="{{ url_for('admin.customer_new') }}">➕ New customer</a></div>
+</div>
+
+<form class="filter-bar" method="get">
+  <label class="grow">Search<input type="search" name="q" value="{{ q }}" placeholder="Name, email, phone or city"></label>
+  <label>Sort
+    <select name="sort">
+      <option value="name" {{ 'selected' if sort == 'name' }}>Name</option>
+      <option value="spent" {{ 'selected' if sort == 'spent' }}>Total spent</option>
+      <option value="orders" {{ 'selected' if sort == 'orders' }}>Number of orders</option>
+      <option value="recent" {{ 'selected' if sort == 'recent' }}>Most recent order</option>
+    </select></label>
+  <button class="btn" type="submit">Apply</button>
+  <a class="btn btn-light" href="{{ url_for('admin.customers') }}">Reset</a>
+</form>
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th class="num">Orders</th><th class="num">Total spent</th><th>Last order</th></tr></thead>
+    <tbody>
+    {% for c in customers %}
+      <tr>
+        <td><a href="{{ url_for('admin.customer_detail', customer_id=c.customer_id) }}">{{ c.full_name }}</a>
+            {% if c.is_sample %}<span class="badge badge-sample">sample</span>{% endif %}</td>
+        <td>{{ c.email }}</td><td>{{ c.phone }}</td><td>{{ c.city }}</td>
+        <td class="num">{{ c.order_count }}</td><td class="num">{{ c.total_spent|inr }}</td>
+        <td>{{ (c.last_order or '-')[:10] }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="hint">No customers found.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

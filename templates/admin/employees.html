@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>Employee accounts</h1><p class="sub">Administrators create staff logins and choose each person's role.</p></div>
+</div>
+
+<div class="grid-21">
+  <div class="card table-wrap">
+    <h2>Staff</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th><th class="num">Orders recorded</th><th class="num">Revenue</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for e in staff %}
+        <tr>
+          <td>{{ e.full_name }}</td><td>{{ e.email }}</td><td>{{ ROLE_LABEL[e.role] }}</td>
+          <td class="num">{{ e.orders }}</td><td class="num">{{ e.revenue|inr }}</td>
+          <td>{% if e.is_active %}<span class="badge badge-active">active</span>{% else %}<span class="badge badge-inactive">inactive</span>{% endif %}</td>
+          <td>{% if e.employee_id != g.employee.employee_id %}
+            <form method="post" action="{{ url_for('admin.employee_toggle', employee_id=e.employee_id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-light btn-sm" type="submit">{{ 'Deactivate' if e.is_active else 'Activate' }}</button>
+            </form>{% else %}<small class="hint">you</small>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">Employees are deactivated, not deleted, so their past sales stay linked to them.</p>
+  </div>
+
+  <form class="card" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <h2>Add employee</h2>
+    {{ field(form.full_name) }}
+    {{ field(form.email) }}
+    {{ field(form.role) }}
+    {{ field(form.password, hint="At least 8 characters. Share it privately.") }}
+    <button class="btn" type="submit">Create account</button>
+  </form>
+</div>
+{% endblock %}

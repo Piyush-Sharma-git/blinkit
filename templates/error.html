@@ -1,0 +1,11 @@
+{% extends "public/base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+
+{% block content %}
+<div class="empty panel" style="margin-top:32px">
+  <div class="icon">{{ '🔒' if code == 403 else '🧭' if code == 404 else '⚠️' }}</div>
+  <h1>Error {{ code }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn" href="{{ url_for('admin.dashboard') if g.get('employee') else url_for('public.home') }}">Go back home</a>
+</div>
+{% endblock %}

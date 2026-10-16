@@ -1,0 +1,55 @@
+{# Layout for every internal page: dark sidebar + content area.
+   Links are shown only for roles allowed to use them; the routes ALSO
+   check the role, so hiding a link is convenience, not security. #}
+{% from "_macros.html" import flashes %}
+{% set ep = request.endpoint or '' %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · Blinkit Sales Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}">blink<span>it</span><small>Sales Portal · internal</small></a>
+    <nav>
+      <span class="side-label">Sales</span>
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if ep == 'admin.dashboard' }}">📊 Dashboard</a>
+      <a href="{{ url_for('admin.order_new') }}" class="{{ 'active' if ep == 'admin.order_new' }}">➕ New transaction</a>
+      <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if ep in ('admin.orders', 'admin.order_detail') }}">🧾 Transactions</a>
+      <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if ep.startswith('admin.customer') }}">👥 Customers</a>
+      <a href="{{ url_for('admin.products') }}" class="{{ 'active' if ep.startswith('admin.product') }}">📦 Products</a>
+      {% if has_role('manager') %}
+        <span class="side-label">Management</span>
+        <a href="{{ url_for('admin.reports') }}" class="{{ 'active' if ep == 'admin.reports' }}">📈 Reports</a>
+      {% endif %}
+      {% if has_role('admin') %}
+        <a href="{{ url_for('admin.employees') }}" class="{{ 'active' if ep == 'admin.employees' }}">🔑 Employees</a>
+      {% endif %}
+      <span class="side-label">Account</span>
+      <a href="{{ url_for('admin.profile') }}" class="{{ 'active' if ep == 'admin.profile' }}">🙍 My profile</a>
+      <a href="{{ url_for('public.home') }}" target="_blank" rel="noopener">🌐 View website</a>
+    </nav>
+    <div class="side-user">
+      <div><b>{{ g.employee.full_name }}</b>{{ ROLE_LABEL[g.employee.role] }}</div>
+      <form action="{{ url_for('admin.logout') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Log out</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="main">
+    {{ flashes() }}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{# Chart.js 4.4.1 (MIT licence) is bundled in static/js so charts work without internet. #}
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

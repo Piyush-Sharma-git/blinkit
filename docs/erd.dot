@@ -1,0 +1,67 @@
+// ER diagram - render with:  dot -Tpng erd.dot -o erd.png
+digraph ERD {
+  graph [rankdir=LR, fontname="Helvetica", bgcolor="white", nodesep=0.5, ranksep=1.1, pad=0.3];
+  node  [shape=plain, fontname="Helvetica", fontsize=11];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555", arrowhead=crow, arrowtail=tee, dir=both];
+
+  categories [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#0f5f4a"><font color="white"><b>categories</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> category_id</td></tr>
+    <tr><td align="left">name (UNIQUE)</td></tr>
+    <tr><td align="left">standard_margin_pct</td></tr>
+    <tr><td align="left">shelf_life_days</td></tr></table>>];
+
+  products [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#0f5f4a"><font color="white"><b>products</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> product_id</td></tr>
+    <tr><td align="left" port="fk"><i>FK</i> category_id</td></tr>
+    <tr><td align="left">name, brand (UNIQUE pair)</td></tr>
+    <tr><td align="left">price, mrp</td></tr>
+    <tr><td align="left">stock_qty, min_stock, max_stock</td></tr>
+    <tr><td align="left">is_active</td></tr></table>>];
+
+  customers [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#1f5fa8"><font color="white"><b>customers</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> customer_id</td></tr>
+    <tr><td align="left">full_name</td></tr>
+    <tr><td align="left">email (UNIQUE), phone (UNIQUE)</td></tr>
+    <tr><td align="left">password_hash</td></tr>
+    <tr><td align="left">address, city, created_at</td></tr></table>>];
+
+  employees [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#5b3a99"><font color="white"><b>employees</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> employee_id</td></tr>
+    <tr><td align="left">full_name, email (UNIQUE)</td></tr>
+    <tr><td align="left">password_hash</td></tr>
+    <tr><td align="left">role (sales_exec / manager / admin)</td></tr>
+    <tr><td align="left">is_active</td></tr></table>>];
+
+  orders [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#ff7a45"><font color="white"><b>orders</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> order_id</td></tr>
+    <tr><td align="left" port="fkc"><i>FK</i> customer_id</td></tr>
+    <tr><td align="left" port="fke"><i>FK</i> employee_id (NULL if online)</td></tr>
+    <tr><td align="left">channel, order_date, status</td></tr>
+    <tr><td align="left">total_amount, notes</td></tr></table>>];
+
+  order_items [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#ff7a45"><font color="white"><b>order_items</b></font></td></tr>
+    <tr><td align="left" port="fko"><b>PK</b> <i>FK</i> order_id</td></tr>
+    <tr><td align="left" port="fkp"><b>PK</b> <i>FK</i> product_id</td></tr>
+    <tr><td align="left">quantity</td></tr>
+    <tr><td align="left">unit_price (at time of sale)</td></tr></table>>];
+
+  payments [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5">
+    <tr><td bgcolor="#ff7a45"><font color="white"><b>payments</b></font></td></tr>
+    <tr><td align="left" port="pk"><b>PK</b> payment_id</td></tr>
+    <tr><td align="left" port="fk"><i>FK</i> order_id (UNIQUE)</td></tr>
+    <tr><td align="left">method, status</td></tr>
+    <tr><td align="left">amount, paid_at</td></tr></table>>];
+
+  categories:pk -> products:fk     [label="1 : N\ncontains"];
+  customers:pk  -> orders:fkc      [label="1 : N\nplaces"];
+  employees:pk  -> orders:fke      [label="1 : N (optional)\nrecords"];
+  orders:pk     -> order_items:fko [label="1 : N\nhas"];
+  products:pk   -> order_items:fkp [label="1 : N\nappears in"];
+  orders:pk     -> payments:fk     [label="1 : 1\npaid by", arrowhead=tee];
+}

@@ -1,0 +1,75 @@
+{% extends "public/base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="about-page">
+  <section class="about-hero">
+    <span class="about-kicker">About the brand</span>
+    <h1>Quick commerce,<br><span>made for everyday.</span></h1>
+    <p>Blinkit is an Indian quick-commerce company that helps customers order groceries and everyday essentials through its app. Orders are prepared at nearby dark stores for rapid delivery.</p>
+    <div class="about-disclaimer">This is an independent academic project and is not affiliated with Blinkit or Eternal Ltd.</div>
+  </section>
+
+  <section class="about-section" aria-labelledby="timeline-title">
+    <div class="about-section-heading">
+      <div>
+        <span class="about-kicker">From Grofers to Blinkit</span>
+        <h2 id="timeline-title">A brief timeline</h2>
+      </div>
+      <p>A few milestones in the company’s evolution.</p>
+    </div>
+    <ol class="about-timeline">
+      <li class="timeline-item">
+        <span class="timeline-year">2013</span>
+        <div><h3>Founded as Grofers</h3><p>Albinder Dhindsa and Saurabh Kumar founded the online grocery company.</p></div>
+      </li>
+      <li class="timeline-item">
+        <span class="timeline-year">2021</span>
+        <div><h3>Rebranded as Blinkit</h3><p>The company adopted the Blinkit name and focused on quick commerce.</p></div>
+      </li>
+      <li class="timeline-item">
+        <span class="timeline-year">2022</span>
+        <div><h3>Acquired by Zomato</h3><p>The acquisition by Zomato was completed in August.</p></div>
+      </li>
+      <li class="timeline-item">
+        <span class="timeline-year">Today</span>
+        <div><h3>Part of Eternal Ltd</h3><p>Blinkit is part of Eternal Ltd, formerly known as Zomato Ltd.</p></div>
+      </li>
+    </ol>
+    <p class="about-source">Company background: Wikipedia, “Blinkit” (checked October 2026). Details may change over time.</p>
+  </section>
+
+  <section class="about-project" aria-labelledby="project-title">
+    <div class="about-project-intro">
+      <span class="about-kicker">The academic project</span>
+      <h2 id="project-title">One portal.<br>Two perspectives.</h2>
+      <p>This demonstration models how a quick-commerce sales operation and its customers could use one shared system.</p>
+    </div>
+    <div class="about-project-content">
+      <div class="about-feature">
+        <span class="about-feature-number">01</span>
+        <div><h3>Customer store</h3><p>Browse products, manage a cart, place a simulated order and view order history.</p></div>
+      </div>
+      <div class="about-feature">
+        <span class="about-feature-number">02</span>
+        <div><h3>Sales dashboard</h3><p>Manage transactions, customers and stock, and review sales reports with role-based access.</p></div>
+      </div>
+      <div class="about-feature">
+        <span class="about-feature-number">03</span>
+        <div><h3>Shared database</h3><p>Customer orders and internal sales records are handled through the same database.</p></div>
+      </div>
+      <div class="about-project-note">
+        <strong>About the sample data</strong>
+        <p>Product data is illustrative. Customers and orders are synthetic sample records, and payments are simulated. No real payments are collected.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-tech" aria-label="Technology used">
+    <span class="about-kicker">Built with</span>
+    <div class="tech-list">
+      <span>Python</span><span>Flask</span><span>SQLite</span><span>HTML</span><span>CSS</span><span>JavaScript</span>
+    </div>
+  </section>
+</div>
+{% endblock %}

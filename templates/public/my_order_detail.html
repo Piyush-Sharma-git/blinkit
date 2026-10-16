@@ -1,0 +1,24 @@
+{% extends "public/base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}Order {{ order.order_id|order_code }}{% endblock %}
+
+{% block content %}
+<p style="margin-top:20px"><a href="{{ url_for('public.my_orders') }}">&larr; All my orders</a></p>
+<h1>Order {{ order.order_id|order_code }}</h1>
+<p>{{ badge(order.status) }} {{ badge(order.payment_status) }}
+   <span class="hint">· placed {{ order.order_date[:16] }} · paid by {{ PAYMENT_METHODS.get(order.payment_method, order.payment_method) }}</span></p>
+
+<div class="panel table-wrap">
+  <table>
+    <thead><tr><th>Product</th><th class="num">Unit price</th><th class="num">Qty</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for i in items %}
+      <tr><td>{{ product_icon(i.name, i.category) }} {{ i.name }} <small class="hint">· {{ i.brand }}</small></td>
+          <td class="num">{{ i.unit_price|inr }}</td><td class="num">{{ i.quantity }}</td>
+          <td class="num">{{ i.line_total|inr }}</td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><th colspan="3" class="num">Order total</th><th class="num">{{ order.total_amount|inr }}</th></tr></tfoot>
+  </table>
+</div>
+{% endblock %}

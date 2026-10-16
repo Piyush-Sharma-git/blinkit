@@ -1,0 +1,43 @@
+{% extends "public/base.html" %}
+{% block title %}Your cart{% endblock %}
+
+{% block content %}
+<h1 style="margin-top:24px">Your cart</h1>
+{% if lines %}
+<div class="two-col" style="margin-top:0">
+  <div class="panel table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th class="num">Price</th><th>Qty</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for line in lines %}
+        <tr>
+          <td>{{ product_icon(line.p.name, line.p.category) }} <strong>{{ line.p.name }}</strong><br><small class="hint">{{ line.p.brand }}</small></td>
+          <td class="num">{{ line.p.price|inr }}</td>
+          <td>
+            <form class="cart-qty" action="{{ url_for('public.cart_update') }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="product_id" value="{{ line.p.product_id }}">
+              <input type="number" name="quantity" value="{{ line.qty }}" min="0" max="{{ line.p.stock_qty }}" aria-label="Quantity">
+              <button class="btn btn-sm btn-ghost" type="submit">Update</button>
+            </form>
+          </td>
+          <td class="num">{{ line.line_total|inr }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">Set a quantity to 0 to remove the item.</p>
+  </div>
+  <div class="panel">
+    <h3 style="margin-top:0">Summary</h3>
+    <p class="hint">Prices are re-checked from the database at checkout.</p>
+    <div class="total-row"><span>Total</span><span>{{ total|inr }}</span></div>
+    <a class="btn btn-accent btn-block" style="margin-top:16px;text-align:center" href="{{ url_for('public.checkout') }}">
+      {% if g.customer %}Proceed to checkout{% else %}Log in to check out{% endif %}</a>
+  </div>
+</div>
+{% else %}
+  <div class="empty panel"><div class="icon">🛒</div><p>Your cart is empty.</p>
+    <a class="btn" href="{{ url_for('public.products') }}">Browse products</a></div>
+{% endif %}
+{% endblock %}

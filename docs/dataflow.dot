@@ -1,0 +1,22 @@
+// Data flow of "staff records a sale" - render with: dot -Tpng dataflow.dot -o dataflow.png
+digraph flow {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.4, pad=0.3];
+  node  [shape=box, style="rounded,filled", fillcolor="#f3f5f4", color="#9aa6a0", fontname="Helvetica", fontsize=11];
+  edge  [fontname="Helvetica", fontsize=9, color="#555555"];
+  user [label="Sales employee\n(browser)", fillcolor="#e2f0ea"];
+  form [label="HTML form\norder_form.html"];
+  route [label="Flask route\nadmin.order_new()\n@staff_required"];
+  valid [label="Validation\nFlask-WTF + parse_items()\nCSRF check"];
+  svc [label="services.create_order()\nprices from DB\ntotal in Python"];
+  db [label="SQLite\nBEGIN\nINSERT orders, order_items,\npayments; UPDATE stock\nCOMMIT / ROLLBACK", shape=cylinder, fillcolor="#fff1e6"];
+  resp [label="redirect →\norder_detail.html\n+ dashboard updated"];
+  user -> form [label="fills in"];
+  form -> route [label="POST"];
+  route -> valid;
+  valid -> form [label="errors", style=dashed, color="#c0392b"];
+  valid -> svc [label="valid"];
+  svc -> db [label="SQL with ?"];
+  db -> svc [label="order_id"];
+  svc -> resp;
+  resp -> user [label="page shown"];
+}

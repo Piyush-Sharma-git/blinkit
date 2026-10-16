@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Sales dashboard</h1>
+    <p class="sub">Hello {{ g.employee.full_name.split()[0] }}. Revenue figures exclude cancelled orders.</p>
+  </div>
+  <div class="actions"><a class="btn" href="{{ url_for('admin.order_new') }}">➕ New transaction</a></div>
+</div>
+<div class="sample-note">Customers and orders shown here are <strong>synthetic sample data</strong> generated for the demo, not real Blinkit records.</div>
+
+<div class="kpis">
+  <div class="kpi highlight"><span>Total revenue</span><b>{{ kpi.revenue|inr }}</b><small>{{ kpi.orders }} orders</small></div>
+  <div class="kpi"><span>This month</span><b>{{ kpi.month_revenue|inr }}</b><small>since the 1st</small></div>
+  <div class="kpi"><span>Today</span><b>{{ kpi.today_revenue|inr }}</b><small>{{ kpi.today_orders }} orders</small></div>
+  <div class="kpi"><span>Avg order value</span><b>{{ kpi.avg_order|inr }}</b><small>per transaction</small></div>
+  <div class="kpi"><span>Customers</span><b>{{ customers }}</b><small>registered</small></div>
+  <div class="kpi {{ 'warn' if low_stock_count }}"><span>Low stock</span><b>{{ low_stock_count }}</b><small><a href="{{ url_for('admin.products', stock='low') }}">products to reorder</a></small></div>
+  <div class="kpi"><span>My sales this month</span><b>{{ my_month.revenue|inr }}</b><small>{{ my_month.orders }} recorded by you</small></div>
+</div>
+
+<div class="grid-21">
+  <div class="card">
+    <h2>Revenue, last 30 days</h2>
+    <div class="chart-box"><canvas id="dailyChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>Revenue by category</h2>
+    <div class="chart-box"><canvas id="categoryChart"></canvas></div>
+  </div>
+</div>
+
+<div class="grid-21">
+  <div class="card">
+    <div class="card-head"><h2>Recent transactions</h2><a href="{{ url_for('admin.orders') }}">All &rarr;</a></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Date</th><th>Customer</th><th>Channel</th><th class="num">Total</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for o in recent %}
+          <tr>
+            <td><a href="{{ url_for('admin.order_detail', order_id=o.order_id) }}">{{ o.order_id|order_code }}</a></td>
+            <td>{{ o.order_date[:16] }}</td>
+            <td>{{ o.customer_name }}</td>
+            <td>{{ badge(o.channel) }}</td>
+            <td class="num">{{ o.total_amount|inr }}</td>
+            <td>{{ badge(o.status) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Reorder soon</h2><a href="{{ url_for('admin.products', stock='low') }}">All &rarr;</a></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Product</th><th class="num">Stock</th><th class="num">Min</th></tr></thead>
+        <tbody>
+        {% for p in low_stock %}
+          <tr><td class="wrap">{{ p.name }}<br><small class="hint">{{ p.brand }}</small></td>
+              <td class="num">{% if p.stock_qty == 0 %}<span class="badge badge-out">0</span>{% else %}{{ p.stock_qty }}{% endif %}</td>
+              <td class="num">{{ p.min_stock }}</td></tr>
+        {% else %}
+          <tr><td colspan="3" class="hint">All products are above their reorder level.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Data is passed from Python with the |tojson filter, which also escapes it safely.
+  lineChart("dailyChart", {{ daily.labels|tojson }}, {{ daily.series|tojson }}, "Revenue (₹)");
+  doughnutChart("categoryChart", {{ by_category.labels|tojson }}, {{ by_category.series|tojson }});
+</script>
+{% endblock %}

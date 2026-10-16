@@ -1,0 +1,49 @@
+{# _macros.html - reusable template pieces. Import with:
+   {% from "_macros.html" import field, badge, pagination %} #}
+
+{# Renders one WTForms field with its label and any validation errors. #}
+{% macro field(f, hint=None) -%}
+  <div class="field {% if f.errors %}has-error{% endif %}">
+    {% if f.type == "BooleanField" %}
+      <label class="check">{{ f(**kwargs) }} {{ f.label.text }}</label>
+    {% else %}
+      {{ f.label }}
+      {{ f(**kwargs) }}
+    {% endif %}
+    {% if hint %}<small class="hint">{{ hint }}</small>{% endif %}
+    {% for err in f.errors %}<small class="error-text">{{ err }}</small>{% endfor %}
+  </div>
+{%- endmacro %}
+
+{# Coloured pill for order / payment statuses. #}
+{% macro badge(value) -%}
+  <span class="badge badge-{{ value }}">{{ value|replace('_', ' ')|title }}</span>
+{%- endmacro %}
+
+{# Previous / next links that keep the current filters in the URL. #}
+{% macro pagination(page, pages, endpoint, args) -%}
+  {% if pages > 1 %}
+  <nav class="pagination">
+    {% if page > 1 %}
+      <a href="{{ url_for(endpoint, page=page-1, **args) }}">&larr; Previous</a>
+    {% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}
+      <a href="{{ url_for(endpoint, page=page+1, **args) }}">Next &rarr;</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+{%- endmacro %}
+
+{# Flash messages (success / error / warning) from flash() in Python. #}
+{% macro flashes() -%}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}" role="status">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+{%- endmacro %}

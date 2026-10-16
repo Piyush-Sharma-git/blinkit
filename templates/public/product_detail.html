@@ -1,0 +1,45 @@
+{% extends "public/base.html" %}
+{% from "public/_product_card.html" import product_card %}
+{% block title %}{{ product.name }} · {{ product.brand }}{% endblock %}
+
+{% block content %}
+<p style="margin-top:20px"><a href="{{ url_for('public.item', name=product.name) }}">&larr; All brands of {{ product.name }}</a></p>
+<div class="detail">
+  <div class="detail-thumb" aria-hidden="true">{{ product_icon(product.name, product.category) }}</div>
+  <div>
+    <span class="hint">{{ product.category }}</span>
+    <h1>{{ product.name }}</h1>
+    <p class="brand" style="color:var(--muted);margin:0">by {{ product.brand }}</p>
+    {% set off = ((product.mrp - product.price) / product.mrp * 100)|round|int %}
+    <p><span class="price">{{ product.price|inr }}</span>
+       <span class="mrp">MRP {{ product.mrp|inr }}</span>
+       {% if off > 0 %}<span class="badge badge-pending">{{ off }}% off</span>{% endif %}</p>
+
+    <ul class="facts">
+      <li><b>Shelf life</b>{{ product.shelf_life_days }} day{{ 's' if product.shelf_life_days != 1 }}</li>
+      <li><b>Availability</b>
+        {% if product.stock_qty == 0 %}<span class="out">Out of stock</span>
+        {% elif product.stock_qty <= product.min_stock %}Only {{ product.stock_qty }} left
+        {% else %}In stock{% endif %}</li>
+      <li><b>You save</b>{{ (product.mrp - product.price)|inr }}</li>
+      <li><b>Product code</b>#{{ product.product_id }}</li>
+    </ul>
+
+    {% if product.stock_qty > 0 %}
+    <form class="qty-form" action="{{ url_for('public.cart_add') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="product_id" value="{{ product.product_id }}">
+      <label for="qty" class="hint">Qty</label>
+      <input id="qty" type="number" name="quantity" value="1" min="1" max="{{ product.stock_qty }}">
+      <button class="btn btn-accent" type="submit">Add to cart</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if related %}
+<div class="section-head"><h2>Other brands of {{ product.name }}</h2>
+  <a href="{{ url_for('public.item', name=product.name) }}">Compare all &rarr;</a></div>
+<div class="product-grid">{% for p in related %}{{ product_card(p) }}{% endfor %}</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}My profile{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>{{ me.full_name }}</h1><p class="sub">{{ ROLE_LABEL[me.role] }} · {{ me.email }} · joined {{ me.created_at[:10] }}</p></div>
+</div>
+
+<div class="kpis">
+  <div class="kpi highlight"><span>My revenue</span><b>{{ stats.revenue|inr }}</b><small>all time, excluding cancelled</small></div>
+  <div class="kpi"><span>Transactions recorded</span><b>{{ stats.orders }}</b></div>
+  <div class="kpi"><span>Average order</span><b>{{ stats.avg_order|inr }}</b></div>
+</div>
+
+<div class="card">
+  <h2>What I can do</h2>
+  <ul>
+    <li>Record and update sales transactions, manage customers, view products and stock.</li>
+    {% if has_role('manager') %}<li>View reports, edit products and prices, delete transactions and customers.</li>{% endif %}
+    {% if has_role('admin') %}<li>Create and deactivate employee accounts.</li>{% endif %}
+  </ul>
+</div>
+
+<div class="card table-wrap">
+  <h2>My recent transactions</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Date</th><th>Customer</th><th class="num">Total</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for o in recent %}
+      <tr><td><a href="{{ url_for('admin.order_detail', order_id=o.order_id) }}">{{ o.order_id|order_code }}</a></td>
+          <td>{{ o.order_date[:16] }}</td><td>{{ o.customer_name }}</td>
+          <td class="num">{{ o.total_amount|inr }}</td><td>{{ badge(o.status) }}</td></tr>
+    {% else %}
+      <tr><td colspan="5" class="hint">You have not recorded any transactions yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

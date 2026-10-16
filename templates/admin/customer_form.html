@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Edit customer' if customer else 'New customer' }}{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>{{ 'Edit ' ~ customer.full_name if customer else 'New customer' }}</h1>
+       <p class="sub">{{ 'Changes apply to future orders and reports.' if customer else 'For customers ordering by phone or in person. They will not have an online login.' }}</p></div>
+  <div class="actions"><a class="btn btn-light" href="{{ url_for('admin.customer_detail', customer_id=customer.customer_id) if customer else url_for('admin.customers') }}">Cancel</a></div>
+</div>
+<form class="card" method="post" novalidate style="max-width:760px">
+  {{ form.hidden_tag() }}
+  <div class="form-grid">
+    {{ field(form.full_name) }}
+    {{ field(form.phone, inputmode="numeric", maxlength=10) }}
+    {{ field(form.email) }}
+    {{ field(form.city) }}
+  </div>
+  {{ field(form.address) }}
+  <button class="btn" type="submit">{{ 'Save changes' if customer else 'Create customer' }}</button>
+</form>
+{% endblock %}

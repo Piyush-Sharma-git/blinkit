@@ -1,0 +1,56 @@
+{% extends "public/base.html" %}
+{% from "public/_product_card.html" import group_card %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>Groceries and essentials, delivered in minutes.</h1>
+    <p>Browse fresh fruit, dairy, snacks and household basics across {{ categories|length }} categories. Add to cart, check out, and track every order from your account.</p>
+    <a class="btn btn-accent" href="{{ url_for('public.products') }}">Start shopping</a>
+    {% if not g.customer %}
+      <a class="btn btn-ghost" style="color:#fff;border-color:#fff" href="{{ url_for('public.register') }}">Create account</a>
+    {% endif %}
+  </div>
+  <div class="hero-art" aria-hidden="true">🥛🍌🥕<br>🍞🧀🍫</div>
+</section>
+
+<div class="stats-strip">
+  <div class="stat"><b>{{ categories|sum(attribute='product_count') }}</b><span>products · {{ total_items }} brand options</span></div>
+  <div class="stat"><b>{{ categories|length }}</b><span>categories</span></div>
+  <div class="stat"><b>10 min</b><span>delivery promise*</span></div>
+  <div class="stat"><b>₹0</b><span>charged · simulated checkout</span></div>
+</div>
+
+<div class="section-head">
+  <h2>Shop by category</h2>
+  <a href="{{ url_for('public.products') }}">View all &rarr;</a>
+</div>
+<div class="cat-grid">
+  {% for c in categories %}
+    <a class="cat-tile" href="{{ url_for('public.products', category=c.category_id) }}">
+      <span class="icon">{{ product_icon(None, c.name) }}</span>
+      <b>{{ c.name }}</b>
+      <small>{{ c.product_count }} products</small>
+    </a>
+  {% endfor %}
+</div>
+
+{% if popular %}
+<div class="section-head">
+  <h2>Popular right now</h2>
+  <a href="{{ url_for('public.products', sort='discount') }}">Best discounts &rarr;</a>
+</div>
+<div class="product-grid">
+  {% for g in popular %}{{ group_card(g) }}{% endfor %}
+</div>
+{% endif %}
+
+<div class="section-head"><h2>How it works</h2></div>
+<div class="steps">
+  <div class="step"><b>1</b><h3>Browse</h3><p>Search or filter by category. Prices and stock come live from the database.</p></div>
+  <div class="step"><b>2</b><h3>Add to cart</h3><p>Your cart remembers items while you shop, even before you log in.</p></div>
+  <div class="step"><b>3</b><h3>Check out</h3><p>Pay by simulated UPI, card or cash on delivery, then track the order in My orders.</p></div>
+</div>
+<p class="hint" style="margin-top:20px">* Blinkit's real service promises delivery in about 10 minutes. This demo does not deliver anything.</p>
+{% endblock %}

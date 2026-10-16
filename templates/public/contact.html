@@ -1,0 +1,85 @@
+{% extends "public/base.html" %}
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+  <header class="contact-heading">
+    <span class="contact-eyebrow">Blinkit Sales Portal · Academic Project</span>
+    <h1>Project team</h1>
+    <p>Meet the students behind this demonstration store.</p>
+  </header>
+
+  <div class="contact-layout">
+    <section class="team-card" aria-labelledby="team-title">
+      <div class="team-card-heading">
+        <div>
+          <span class="contact-eyebrow">The people behind the project</span>
+          <h2 id="team-title">Project team</h2>
+        </div>
+        <span class="team-count">4 students</span>
+      </div>
+
+      <ul class="team-list">
+        <li class="team-member">
+          <span class="team-avatar" aria-hidden="true">CP</span>
+          <span class="team-member-name">Chokkapu Prateeka</span>
+          <span class="team-member-id">2025-5IPM-14</span>
+        </li>
+        <li class="team-member">
+          <span class="team-avatar" aria-hidden="true">KS</span>
+          <span class="team-member-name">Keosha S</span>
+          <span class="team-member-id">2025-5IPM-27</span>
+        </li>
+        <li class="team-member">
+          <span class="team-avatar" aria-hidden="true">KD</span>
+          <span class="team-member-name">Kurmatey Divya Gowri</span>
+          <span class="team-member-id">2025-5IPM-29</span>
+        </li>
+        <li class="team-member">
+          <span class="team-avatar" aria-hidden="true">RN</span>
+          <span class="team-member-name">Revathee Yasawini Nune</span>
+          <span class="team-member-id">2025-5IPM-47</span>
+        </li>
+      </ul>
+
+      <div class="team-affiliation">
+        <span class="affiliation-mark" aria-hidden="true">N</span>
+        <div>
+          <span class="affiliation-label">College &amp; department</span>
+          <p>NALSAR University of Law<br>Department of Management Studies</p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="contact-help">
+      <span class="contact-eyebrow">Need help?</span>
+      <h2>Order questions</h2>
+      <p>This is a demonstration store and does not handle real orders or deliveries. For help with a real Blinkit order, please use the official Blinkit app.</p>
+      <a class="help-link" href="{{ url_for('public.my_orders') }}">View your orders <span aria-hidden="true">→</span></a>
+      <a class="help-link" href="{{ url_for('admin.login') }}">Staff dashboard <span aria-hidden="true">→</span></a>
+      <div class="help-note">Checkout and payments on this site are simulated. No money is charged.</div>
+    </aside>
+  </div>
+
+  <section class="contact-faq" aria-labelledby="faq-title">
+    <div class="contact-faq-heading">
+      <span class="contact-eyebrow">A few helpful details</span>
+      <h2 id="faq-title">Frequently asked</h2>
+    </div>
+    <div class="faq-grid">
+      <article class="faq-card">
+        <h3>Are payments real?</h3>
+        <p>No. UPI, card and checkout are simulated. The site never asks for real payment details.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Why is an item out of stock?</h3>
+        <p>Available quantities are tracked in the project database and decrease when an order is placed.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Can I see another customer's orders?</h3>
+        <p>No. A customer account can only view its own orders.</p>
+      </article>
+    </div>
+  </section>
+</div>
+{% endblock %}

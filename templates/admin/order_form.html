@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}New transaction{% endblock %}
+
+{# One <option> list reused by every product row. data-price / data-stock are
+   only for the live estimate in admin.js - the server ignores them. #}
+{% macro product_options(selected) -%}
+  <option value="">-- Select product --</option>
+  {% set ns = namespace(cat=None) %}
+  {% for p in products %}
+    {% if p.category != ns.cat %}
+      {% if ns.cat %}</optgroup>{% endif %}<optgroup label="{{ p.category }}">{% set ns.cat = p.category %}
+    {% endif %}
+    <option value="{{ p.product_id }}" data-price="{{ p.price }}" data-stock="{{ p.stock_qty }}"
+            {{ 'selected' if selected|string == p.product_id|string }} {{ 'disabled' if p.stock_qty == 0 }}>
+      {{ p.name }} · {{ p.brand }} · {{ p.price|inr }}{{ ' (out of stock)' if p.stock_qty == 0 }}</option>
+  {% endfor %}
+  {% if ns.cat %}</optgroup>{% endif %}
+{%- endmacro %}
+
+{% macro item_row(pid='', qty='1') -%}
+  <tr>
+    <td><select name="product_id" aria-label="Product">{{ product_options(pid) }}</select>
+        <small class="hint stock-note"></small></td>
+    <td><input type="number" name="quantity" value="{{ qty }}" min="1" max="1000" aria-label="Quantity"></td>
+    <td class="num line-total">-</td>
+    <td><button type="button" class="btn btn-light btn-sm remove-row" title="Remove row">✕</button></td>
+  </tr>
+{%- endmacro %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>New sales transaction</h1>
+       <p class="sub">Recorded by {{ g.employee.full_name }}. The transaction ID is generated when you save.</p></div>
+</div>
+
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <div class="grid-21">
+    <div class="card">
+      <h2>1. Customer and payment</h2>
+      {{ field(form.customer_id) }}
+      <p class="hint" style="margin-top:-8px">Not in the list? <a href="{{ url_for('admin.customer_new', then='order') }}">Create a new customer</a></p>
+      <div class="form-grid-3">
+        {{ field(form.order_date) }}
+        {{ field(form.payment_method) }}
+        {{ field(form.payment_status) }}
+      </div>
+      {{ field(form.notes, rows=2) }}
+    </div>
+
+    <div class="card">
+      <h2>3. Review</h2>
+      <p class="hint">Estimated total (the server recalculates the real total from database prices):</p>
+      <p class="estimate" id="estimate">₹0.00</p>
+      <button class="btn" type="submit" style="width:100%;justify-content:center">Save transaction</button>
+      <p class="hint" style="margin-top:12px">Saving creates the order, its line items and the payment in one database transaction, and reduces stock. If anything fails, nothing is saved.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>2. Products</h2>
+      <button type="button" class="btn btn-light btn-sm" id="addRow">+ Add product</button></div>
+    <div class="table-wrap">
+      <table class="items-table">
+        <thead><tr><th style="width:60%">Product</th><th>Qty</th><th class="num">Line total</th><th></th></tr></thead>
+        <tbody id="itemsBody">
+          {% for pid, qty in rows %}{{ item_row(pid, qty) }}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+
+<template id="rowTemplate">{{ item_row() }}</template>
+{% endblock %}

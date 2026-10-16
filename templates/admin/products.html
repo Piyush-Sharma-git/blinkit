@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>Products and stock</h1><p class="sub">{{ products|length }} products. Loaded from the Excel dataset; stock levels are simulated.</p></div>
+  {% if has_role('manager') %}
+  <div class="actions"><a class="btn" href="{{ url_for('admin.product_new') }}">➕ New product</a></div>
+  {% endif %}
+</div>
+
+<form class="filter-bar" method="get">
+  <label class="grow">Search<input type="search" name="q" value="{{ q }}" placeholder="Name, brand or product ID"></label>
+  <label>Category
+    <select name="category"><option value="">All</option>
+      {% for c in categories %}<option value="{{ c.category_id }}" {{ 'selected' if c.category_id == category_id }}>{{ c.name }}</option>{% endfor %}
+    </select></label>
+  <label>Stock
+    <select name="stock">
+      <option value="">Any</option>
+      <option value="low" {{ 'selected' if stock == 'low' }}>At or below reorder level</option>
+      <option value="out" {{ 'selected' if stock == 'out' }}>Out of stock</option>
+    </select></label>
+  <label>Sort
+    <select name="sort">
+      <option value="name" {{ 'selected' if sort == 'name' }}>Name</option>
+      <option value="stock" {{ 'selected' if sort == 'stock' }}>Lowest stock</option>
+      <option value="price" {{ 'selected' if sort == 'price' }}>Highest price</option>
+      <option value="sold" {{ 'selected' if sort == 'sold' }}>Best selling</option>
+    </select></label>
+  <button class="btn" type="submit">Apply</button>
+  <a class="btn btn-light" href="{{ url_for('admin.products') }}">Reset</a>
+</form>
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Product</th><th>Category</th><th class="num">Price</th><th class="num">MRP</th>
+               <th class="num">Stock</th><th class="num">Min / Max</th><th class="num">Units sold</th><th>Status</th>
+               {% if has_role('manager') %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td>{{ p.product_id }}</td>
+        <td>{{ p.name }}<br><small class="hint">{{ p.brand }}</small></td>
+        <td>{{ p.category }}</td>
+        <td class="num">{{ p.price|inr }}</td>
+        <td class="num">{{ p.mrp|inr }}</td>
+        <td class="num">{{ p.stock_qty }}
+          {% if p.stock_qty == 0 %}<span class="badge badge-out">out</span>
+          {% elif p.stock_qty <= p.min_stock %}<span class="badge badge-low">low</span>{% endif %}</td>
+        <td class="num">{{ p.min_stock }} / {{ p.max_stock }}</td>
+        <td class="num">{{ p.units_sold }}</td>
+        <td>{% if p.is_active %}<span class="badge badge-active">active</span>{% else %}<span class="badge badge-inactive">hidden</span>{% endif %}</td>
+        {% if has_role('manager') %}<td><a class="btn btn-light btn-sm" href="{{ url_for('admin.product_edit', product_id=p.product_id) }}">Edit</a></td>{% endif %}
+      </tr>
+    {% else %}
+      <tr><td colspan="10" class="hint">No products found.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

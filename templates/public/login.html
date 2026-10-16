@@ -1,0 +1,18 @@
+{% extends "public/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1>Welcome back</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+    {{ field(form.email, autocomplete="email") }}
+    {{ field(form.password, autocomplete="current-password") }}
+    <button class="btn btn-block" type="submit">Log in</button>
+  </form>
+  <p>New here? <a href="{{ url_for('public.register', next=request.args.get('next')) }}">Create an account</a></p>
+  <div class="demo-hint">Demo customer: <strong>demo@example.com</strong> / <strong>Customer@123</strong></div>
+</div>
+{% endblock %}

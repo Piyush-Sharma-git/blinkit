@@ -1,0 +1,32 @@
+{% from "_macros.html" import field, flashes %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff login · Blinkit Sales Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="brand">blink<span>it</span><small>Sales Portal · staff only</small></div>
+    {{ flashes() }}
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+      {{ field(form.email, autocomplete="username") }}
+      {{ field(form.password, autocomplete="current-password") }}
+      <button class="btn" style="width:100%;justify-content:center" type="submit">Sign in</button>
+    </form>
+    <div class="demo-box">
+      Demo accounts (remove before any real use):<br>
+      <code>priya@blinkit.test</code> / <code>Sales@123</code> · Sales Executive<br>
+      <code>manager@blinkit.test</code> / <code>Manager@123</code> · Sales Manager<br>
+      <code>admin@blinkit.test</code> / <code>Admin@123</code> · Administrator
+    </div>
+    <p class="hint" style="margin-top:14px"><a href="{{ url_for('public.home') }}">&larr; Back to the customer website</a></p>
+  </div>
+</div>
+</body>
+</html>

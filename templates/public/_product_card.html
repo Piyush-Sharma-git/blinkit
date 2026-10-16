@@ -1,0 +1,51 @@
+{# One product tile. Used by home, products and product detail pages:
+   {% from "public/_product_card.html" import product_card %}  #}
+{% macro product_card(p) -%}
+  {% set off = ((p.mrp - p.price) / p.mrp * 100)|round|int %}
+  <article class="product-card">
+    {% if off > 0 %}<span class="discount">{{ off }}% OFF</span>{% endif %}
+    <a class="product-thumb" href="{{ url_for('public.product_detail', product_id=p.product_id) }}" aria-hidden="true">{{ product_icon(p.name, p.category) }}</a>
+    <span class="cat">{{ p.category }}</span>
+    <h3><a href="{{ url_for('public.product_detail', product_id=p.product_id) }}">{{ p.name }}</a></h3>
+    <p class="brand">{{ p.brand }}</p>
+    <div class="price-row">
+      <span class="price">{{ p.price|inr }}<span class="mrp">{{ p.mrp|inr }}</span></span>
+      {% if p.stock_qty is defined and p.stock_qty == 0 %}
+        <span class="out">Out of stock</span>
+      {% else %}
+        <form action="{{ url_for('public.cart_add') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ p.product_id }}">
+          <button class="btn btn-sm btn-ghost" type="submit">Add</button>
+        </form>
+      {% endif %}
+    </div>
+  </article>
+{%- endmacro %}
+
+{# One card per product NAME (all brands grouped by SQL GROUP BY).
+   g has: name, category, brand_count, min_price, total_stock, max_discount, cheapest_id #}
+{% macro group_card(g) -%}
+  {% set link = url_for('public.item', name=g.name) %}
+  <article class="product-card">
+    {% if g.max_discount > 0 %}<span class="discount">{{ 'UP TO ' if g.brand_count > 1 }}{{ g.max_discount }}% OFF</span>{% endif %}
+    <a class="product-thumb" href="{{ link }}" aria-hidden="true">{{ product_icon(g.name, g.category) }}</a>
+    <span class="cat">{{ g.category }}</span>
+    <h3><a href="{{ link }}">{{ g.name }}</a></h3>
+    <p class="brand">{{ g.brand_count }} brand{{ 's' if g.brand_count != 1 }} available</p>
+    <div class="price-row">
+      <span class="price">{% if g.brand_count > 1 %}<small class="from">from </small>{% endif %}{{ g.min_price|inr }}</span>
+      {% if not g.total_stock %}
+        <span class="out">Out of stock</span>
+      {% elif g.brand_count == 1 and g.cheapest_id %}
+        <form action="{{ url_for('public.cart_add') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ g.cheapest_id }}">
+          <button class="btn btn-sm btn-ghost" type="submit">Add</button>
+        </form>
+      {% else %}
+        <a class="btn btn-sm btn-ghost" href="{{ link }}">Choose</a>
+      {% endif %}
+    </div>
+  </article>
+{%- endmacro %}

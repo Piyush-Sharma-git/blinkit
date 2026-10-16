@@ -1,0 +1,32 @@
+{% extends "public/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h1 style="margin-top:24px">Checkout</h1>
+<div class="two-col" style="margin-top:0">
+  <div class="panel table-wrap">
+    <h3 style="margin-top:0">Order summary</h3>
+    <table>
+      <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for line in lines %}
+        <tr><td>{{ line.p.name }} <small class="hint">· {{ line.p.brand }}</small></td>
+            <td class="num">{{ line.qty }} × {{ line.p.price|inr }}</td>
+            <td class="num">{{ line.line_total|inr }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="total-row"><span>Total payable</span><span>{{ total|inr }}</span></div>
+  </div>
+
+  <form class="panel" method="post" novalidate>
+    {{ form.hidden_tag() }}  {# hidden CSRF token #}
+    <h3 style="margin-top:0">Payment</h3>
+    {{ field(form.payment_method) }}
+    {{ field(form.notes, rows=3) }}
+    <p class="demo-hint">This is a <strong>simulated</strong> checkout for a college demo. No card or UPI details are collected and no money is charged.</p>
+    <button class="btn btn-accent btn-block" type="submit">Place order · {{ total|inr }}</button>
+  </form>
+</div>
+{% endblock %}

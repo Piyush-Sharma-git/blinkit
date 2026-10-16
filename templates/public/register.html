@@ -1,0 +1,26 @@
+{% extends "public/base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Create account{% endblock %}
+
+{% block content %}
+<div class="auth-card" style="max-width:620px">
+  <h1>Create your account</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+    <div class="form-grid">
+      {{ field(form.full_name, autocomplete="name") }}
+      {{ field(form.phone, autocomplete="tel", inputmode="numeric", maxlength=10) }}
+    </div>
+    {{ field(form.email, autocomplete="email") }}
+    <div class="form-grid">
+      {{ field(form.address, autocomplete="street-address") }}
+      {{ field(form.city, autocomplete="address-level2") }}
+      {{ field(form.password, autocomplete="new-password", hint="At least 8 characters") }}
+      {{ field(form.confirm, autocomplete="new-password") }}
+    </div>
+    <button class="btn btn-block" type="submit">Create account</button>
+  </form>
+  <p>Already registered? <a href="{{ url_for('public.login') }}">Log in</a></p>
+</div>
+{% endblock %}

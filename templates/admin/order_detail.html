@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge, field %}
+{% block title %}{{ order.order_id|order_code }}{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Transaction {{ order.order_id|order_code }}</h1>
+    <p class="sub">{{ badge(order.status) }} {{ badge(order.payment_status) }} {{ badge(order.channel) }}
+      {% if order.is_sample %}<span class="badge badge-sample">synthetic sample record</span>{% endif %}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-light" href="{{ url_for('admin.orders') }}">&larr; All transactions</a>
+    {% if has_role('manager') %}
+    <form method="post" action="{{ url_for('admin.order_delete', order_id=order.order_id) }}"
+          data-confirm="Delete this transaction permanently? Stock will be restored.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-21">
+  <div class="card table-wrap">
+    <h2>Line items</h2>
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th class="num">Unit price</th><th class="num">Qty</th><th class="num">Line total</th></tr></thead>
+      <tbody>
+      {% for i in items %}
+        <tr><td>{{ i.name }} <small class="hint">· {{ i.brand }} · #{{ i.product_id }}</small></td>
+            <td>{{ i.category }}</td><td class="num">{{ i.unit_price|inr }}</td>
+            <td class="num">{{ i.quantity }}</td><td class="num">{{ i.line_total|inr }}</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><th colspan="4" class="num">Total amount</th><th class="num">{{ order.total_amount|inr }}</th></tr></tfoot>
+    </table>
+    <p class="hint">Unit prices are stored at the time of sale, so later price changes do not alter this record.</p>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Details</h2>
+      <dl class="dl">
+        <dt>Customer</dt><dd><a href="{{ url_for('admin.customer_detail', customer_id=order.customer_id) }}">{{ order.customer_name }}</a></dd>
+        <dt>Transaction date</dt><dd>{{ order.order_date }}</dd>
+        <dt>Recorded by</dt><dd>{{ order.employee_name or 'Customer, via website' }}</dd>
+        <dt>Payment method</dt><dd>{{ PAYMENT_METHODS.get(payment.method, payment.method) }}</dd>
+        <dt>Amount</dt><dd>{{ payment.amount|inr }}</dd>
+        <dt>Paid at</dt><dd>{{ payment.paid_at or '-' }}</dd>
+        <dt>Saved at</dt><dd>{{ extra.created_at }}</dd>
+        {% if extra.notes %}<dt>Notes</dt><dd>{{ extra.notes }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Update</h2>
+      <form class="inline-form" method="post" action="{{ url_for('admin.order_status', order_id=order.order_id) }}">
+        {{ status_form.hidden_tag() }}
+        {{ field(status_form.status) }}
+        <button class="btn btn-sm" type="submit">Save status</button>
+      </form>
+      <p class="hint">Placed → Delivered or Cancelled. Cancelling restores stock and refunds a paid order.</p>
+      <form class="inline-form" method="post" action="{{ url_for('admin.order_payment', order_id=order.order_id) }}">
+        {{ payment_form.hidden_tag() }}
+        {{ field(payment_form.payment_status) }}
+        <button class="btn btn-sm" type="submit">Save payment</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

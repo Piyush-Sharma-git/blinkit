@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>Sales reports</h1><p class="sub">Every figure below is one SQL query using JOIN, GROUP BY, HAVING or a subquery. Cancelled orders are excluded.</p></div>
+</div>
+
+<form class="filter-bar" method="get">
+  <label>From<input type="date" name="date_from" value="{{ date_from }}"></label>
+  <label>To<input type="date" name="date_to" value="{{ date_to }}"></label>
+  <button class="btn" type="submit">Apply</button>
+  <a class="btn btn-light" href="{{ url_for('admin.reports') }}">All time</a>
+</form>
+
+<div class="kpis">
+  <div class="kpi highlight"><span>Revenue</span><b>{{ totals.revenue|inr }}</b></div>
+  <div class="kpi"><span>Orders</span><b>{{ totals.orders }}</b></div>
+  <div class="kpi"><span>Average order</span><b>{{ totals.avg_order|inr }}</b></div>
+  <div class="kpi"><span>Buying customers</span><b>{{ totals.customers }}</b></div>
+  <div class="kpi"><span>Orders above average</span><b>{{ above_avg.n }}</b><small>average = {{ (above_avg.avg or 0)|inr }}</small></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Monthly revenue</h2>
+    <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
+  </div>
+  <div class="card table-wrap">
+    <h2>Revenue by category</h2>
+    <table>
+      <thead><tr><th>Category</th><th class="num">Units</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Est. margin</th></tr></thead>
+      <tbody>{% for r in by_category %}
+        <tr><td class="wrap">{{ r.category }}</td><td class="num">{{ r.units }}</td><td class="num">{{ r.orders }}</td>
+            <td class="num">{{ r.revenue|inr }}</td><td class="num">{{ r.est_margin|inr }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    <p class="hint">Estimated margin = revenue × the category's standard margin % from the dataset.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card table-wrap">
+    <h2>Top 10 products by revenue</h2>
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead>
+      <tbody>{% for p in top_products %}
+        <tr><td class="wrap">{{ p.name }}<br><small class="hint">{{ p.brand }}</small></td><td class="wrap">{{ p.category }}</td>
+            <td class="num">{{ p.units }}</td><td class="num">{{ p.revenue|inr }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+  <div class="card table-wrap">
+    <h2>Sales by employee / channel</h2>
+    <table>
+      <thead><tr><th>Seller</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Avg order</th></tr></thead>
+      <tbody>{% for e in by_employee %}
+        <tr><td>{{ e.seller }} {% if e.role %}<small class="hint">· {{ ROLE_LABEL[e.role] }}</small>{% endif %}</td>
+            <td class="num">{{ e.orders }}</td><td class="num">{{ e.revenue|inr }}</td><td class="num">{{ e.avg_order|inr }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    <h2 style="margin-top:20px">Payment methods</h2>
+    <table>
+      <thead><tr><th>Method</th><th class="num">Orders</th><th class="num">Revenue</th></tr></thead>
+      <tbody>{% for p in by_payment %}
+        <tr><td>{{ PAYMENT_METHODS.get(p.method, p.method) }}</td><td class="num">{{ p.orders }}</td><td class="num">{{ p.revenue|inr }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card table-wrap">
+    <h2>Repeat customers (3+ orders) <small class="hint">· uses HAVING</small></h2>
+    <table>
+      <thead><tr><th>Customer</th><th>City</th><th class="num">Orders</th><th class="num">Spent</th></tr></thead>
+      <tbody>{% for c in repeat_customers %}
+        <tr><td><a href="{{ url_for('admin.customer_detail', customer_id=c.customer_id) }}">{{ c.full_name }}</a></td>
+            <td>{{ c.city }}</td><td class="num">{{ c.orders }}</td><td class="num">{{ c.spent|inr }}</td></tr>
+      {% else %}<tr><td colspan="4" class="hint">None in this period.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  <div class="card table-wrap">
+    <h2>Products with no sales ({{ never_sold|length }}) <small class="hint">· uses NOT EXISTS</small></h2>
+    <table>
+      <thead><tr><th>ID</th><th>Product</th><th>Category</th><th class="num">Stock</th></tr></thead>
+      <tbody>{% for p in never_sold[:15] %}
+        <tr><td>{{ p.product_id }}</td><td class="wrap">{{ p.name }}<br><small class="hint">{{ p.brand }}</small></td>
+            <td class="wrap">{{ p.category }}</td><td class="num">{{ p.stock_qty }}</td></tr>
+      {% else %}<tr><td colspan="4" class="hint">Every product sold at least once.</td></tr>{% endfor %}</tbody>
+    </table>
+    {% if never_sold|length > 15 %}<p class="hint">Showing 15 of {{ never_sold|length }}.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>barChart("monthlyChart", {{ chart.labels|tojson }}, {{ chart.series|tojson }}, "Revenue (₹)");</script>
+{% endblock %}

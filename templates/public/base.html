@@ -1,0 +1,56 @@
+{# Layout shared by every customer page. Child pages fill {% block content %}. #}
+{% from "_macros.html" import flashes %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Groceries in minutes{% endblock %} · Blinkit Demo Store</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+</head>
+<body>
+  <div class="demo-banner">
+    Academic project modelled on Blinkit · not affiliated with Blinkit or Eternal Ltd ·
+    products come from a sample dataset and checkout is simulated
+  </div>
+
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="logo" href="{{ url_for('public.home') }}">blink<span>it</span><small>demo</small></a>
+
+      <form class="search" action="{{ url_for('public.products') }}" method="get">
+        <input type="search" name="q" placeholder="Search milk, chips, shampoo..." value="{{ request.args.get('q', '') }}" aria-label="Search products">
+        <button class="btn" type="submit">Search</button>
+      </form>
+
+      <nav class="nav">
+        <a href="{{ url_for('public.products') }}">Products</a>
+        <a href="{{ url_for('public.about') }}">About</a>
+        <a href="{{ url_for('public.contact') }}">Contact</a>
+        {% if g.customer %}
+          <a href="{{ url_for('public.my_orders') }}">My orders</a>
+          <form action="{{ url_for('public.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="linklike" type="submit">Logout</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('public.login') }}">Login</a>
+        {% endif %}
+        <a class="cart-link" href="{{ url_for('public.cart') }}">Cart <b>{{ cart_count }}</b></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {{ flashes() }}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <span>Blinkit Sales Portal · college project built with Python, Flask and SQLite</span>
+      <span><a href="{{ url_for('admin.login') }}">Staff login</a></span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>{{ customer.full_name }}</h1>
+       <p class="sub">Customer #{{ customer.customer_id }} · since {{ customer.created_at[:10] }}
+       {% if customer.is_sample %}<span class="badge badge-sample">synthetic sample record</span>{% endif %}</p></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('admin.order_new', customer_id=customer.customer_id) }}">➕ New transaction</a>
+    <a class="btn btn-light" href="{{ url_for('admin.customer_edit', customer_id=customer.customer_id) }}">Edit</a>
+    {% if has_role('manager') %}
+    <form method="post" action="{{ url_for('admin.customer_delete', customer_id=customer.customer_id) }}" data-confirm="Delete this customer?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi highlight"><span>Lifetime value</span><b>{{ stats.spent|inr }}</b><small>excluding cancelled</small></div>
+  <div class="kpi"><span>Orders</span><b>{{ stats.orders }}</b></div>
+  <div class="kpi"><span>Average order</span><b>{{ stats.avg_order|inr }}</b></div>
+  <div class="kpi"><span>Favourite category</span><b style="font-size:1.1rem">{{ fav.name if fav else '-' }}</b></div>
+</div>
+
+<div class="grid-21">
+  <div class="card table-wrap">
+    <h2>Transaction history</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Channel</th><th class="num">Items</th><th class="num">Total</th><th>Status</th><th>Payment</th></tr></thead>
+      <tbody>
+      {% for o in orders %}
+        <tr><td><a href="{{ url_for('admin.order_detail', order_id=o.order_id) }}">{{ o.order_id|order_code }}</a></td>
+            <td>{{ o.order_date[:16] }}</td><td>{{ badge(o.channel) }}</td>
+            <td class="num">{{ o.item_count }}</td><td class="num">{{ o.total_amount|inr }}</td>
+            <td>{{ badge(o.status) }}</td><td>{{ badge(o.payment_status) }}</td></tr>
+      {% else %}
+        <tr><td colspan="7" class="hint">No orders yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Contact details</h2>
+    <dl class="dl">
+      <dt>Email</dt><dd>{{ customer.email }}</dd>
+      <dt>Phone</dt><dd>{{ customer.phone }}</dd>
+      <dt>Address</dt><dd>{{ customer.address }}</dd>
+      <dt>City</dt><dd>{{ customer.city }}</dd>
+      <dt>Online login</dt><dd>{{ 'Yes' if customer.password_hash else 'No (created by staff)' }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

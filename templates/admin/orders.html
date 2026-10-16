@@ -1,0 +1,67 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge, pagination %}
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div><h1>Sales transactions</h1><p class="sub">Search, filter and sort every order.</p></div>
+  <div class="actions"><a class="btn" href="{{ url_for('admin.order_new') }}">➕ New transaction</a></div>
+</div>
+
+{# A GET form: the filters end up in the URL (?status=paid&sort=...). #}
+<form class="filter-bar" method="get">
+  <label class="grow">Search<input type="search" name="q" value="{{ f.q }}" placeholder="BLK-000123 or customer name"></label>
+  <label>Status
+    <select name="status"><option value="">Any</option>
+      {% for s in ['placed', 'delivered', 'cancelled'] %}<option value="{{ s }}" {{ 'selected' if f.status == s }}>{{ s|title }}</option>{% endfor %}
+    </select></label>
+  <label>Payment
+    <select name="payment_status"><option value="">Any</option>
+      {% for s in ['pending', 'paid', 'failed', 'refunded'] %}<option value="{{ s }}" {{ 'selected' if f.payment_status == s }}>{{ s|title }}</option>{% endfor %}
+    </select></label>
+  <label>Channel
+    <select name="channel"><option value="">Any</option>
+      <option value="online" {{ 'selected' if f.channel == 'online' }}>Online</option>
+      <option value="staff" {{ 'selected' if f.channel == 'staff' }}>Staff</option>
+    </select></label>
+  <label>From<input type="date" name="date_from" value="{{ f.date_from }}"></label>
+  <label>To<input type="date" name="date_to" value="{{ f.date_to }}"></label>
+  <label>Sort
+    <select name="sort">
+      <option value="date_desc" {{ 'selected' if f.sort in ('', 'date_desc') }}>Newest first</option>
+      <option value="date_asc" {{ 'selected' if f.sort == 'date_asc' }}>Oldest first</option>
+      <option value="total_desc" {{ 'selected' if f.sort == 'total_desc' }}>Highest total</option>
+      <option value="total_asc" {{ 'selected' if f.sort == 'total_asc' }}>Lowest total</option>
+    </select></label>
+  <button class="btn" type="submit">Apply</button>
+  <a class="btn btn-light" href="{{ url_for('admin.orders') }}">Reset</a>
+</form>
+
+<p class="result-meta">{{ summary.n }} transactions · revenue (excluding cancelled) {{ summary.revenue|inr }}</p>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Date</th><th>Customer</th><th>Recorded by</th><th class="num">Items</th>
+               <th class="num">Total</th><th>Status</th><th>Payment</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td><a href="{{ url_for('admin.order_detail', order_id=o.order_id) }}">{{ o.order_id|order_code }}</a>
+            {% if o.is_sample %}<span class="badge badge-sample" title="Synthetic demo record">sample</span>{% endif %}</td>
+        <td>{{ o.order_date[:16] }}</td>
+        <td><a href="{{ url_for('admin.customer_detail', customer_id=o.customer_id) }}">{{ o.customer_name }}</a></td>
+        <td>{{ o.employee_name or 'Website' }}</td>
+        <td class="num">{{ o.item_count }}</td>
+        <td class="num">{{ o.total_amount|inr }}</td>
+        <td>{{ badge(o.status) }}</td>
+        <td>{{ badge(o.payment_status) }} <small class="hint">{{ o.payment_method|upper }}</small></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="hint">No transactions match these filters.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% set args = {} %}
+  {% for k, v in f.items() if v %}{% set _ = args.update({k: v}) %}{% endfor %}
+  {{ pagination(page, pages, 'admin.orders', args) }}
+</div>
+{% endblock %}
